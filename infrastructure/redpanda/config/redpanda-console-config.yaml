@@ -1,0 +1,36 @@
+kafka:
+    brokers: ["redpanda-0:9092"]
+    schemaRegistry:
+        enabled: true
+        urls: ["http://redpanda-0:8081"]
+    redpanda:
+        adminApi:
+            enabled: true
+        urls: ["http://redpanda-0:9644"]
+
+console:
+    login:
+        enabled: true
+        # generate a secret using this command:
+        #  LC_ALL=C tr -dc '[:alnum:]' < /dev/random | head -c32
+        jwtSecret: ""
+
+        # github oauth
+        github:
+            enabled: true
+            clientId: ""
+            # ClientSecret is sensitive. You can provide this config also via the
+            # the environment variable LOGIN_GITHUB_CLIENTSECRET
+            clientSecret: ""
+            # The directory config is only required if you want to use GitHub
+            # teams in your role bindings. Described further in the next section.
+            directory:
+                personalAccessToken: ""
+            roleBindings:
+                - metadata:
+                    name: Developer
+                    subjects:
+                        - kind: group
+                          provider: GitHub
+                          name: hopps
+                          organization: hopps
