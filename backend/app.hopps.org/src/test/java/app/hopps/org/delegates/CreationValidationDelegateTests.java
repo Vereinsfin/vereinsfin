@@ -5,7 +5,7 @@ import app.hopps.org.jpa.MemberRespository;
 import app.hopps.org.jpa.Organization;
 import app.hopps.org.jpa.OrganizationRepository;
 import app.hopps.org.validation.NonUniqueConstraintViolation;
-import app.hopps.org.validation.NonUniqueConstraintViolation.NonUniqueConstraintViolationException;
+import app.hopps.org.validation.NonUniqueConstraintViolationException;
 import io.quarkus.narayana.jta.QuarkusTransaction;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
@@ -110,7 +110,7 @@ public class CreationValidationDelegateTests {
 
     @Test
     @DisplayName("should validate valid data")
-    void shouldInvalidateUniqueness() throws NonUniqueConstraintViolationException {
+    void shouldInvalidateUniqueness() {
 
         // given
         Organization existingOrganization = new Organization();

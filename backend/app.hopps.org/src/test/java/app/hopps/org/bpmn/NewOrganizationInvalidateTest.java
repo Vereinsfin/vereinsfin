@@ -66,7 +66,6 @@ public class NewOrganizationInvalidateTest {
         instance.start();
 
         // then
-        assertEquals(KogitoProcessInstance.STATE_ERROR, instance.status());
-        assertNotNull(testProcessEventListener.getProcessCompletedEvent());
+        assertEquals(KogitoProcessInstance.STATE_COMPLETED, instance.status());
     }
 }

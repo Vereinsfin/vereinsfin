@@ -5,6 +5,7 @@ import app.hopps.org.jpa.MemberRespository;
 import app.hopps.org.jpa.Organization;
 import app.hopps.org.jpa.OrganizationRepository;
 import app.hopps.org.validation.NonUniqueConstraintViolation;
+import app.hopps.org.validation.NonUniqueConstraintViolationException;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.validation.ConstraintViolation;
@@ -26,7 +27,7 @@ public class CreationValidationDelegate {
     @Inject
     OrganizationRepository organizationRepository;
 
-    public void validateWithValidator(Organization organization, Member owner) {
+    public void validateWithValidator(Organization organization, Member owner) throws ConstraintViolationException {
 
         Set<ConstraintViolation<?>> violations = new HashSet<>();
         violations.addAll(validator.validate(organization));
@@ -59,7 +60,7 @@ public class CreationValidationDelegate {
         }
 
         if (!nonUniqueConstraintViolations.isEmpty()) {
-            throw new NonUniqueConstraintViolation.NonUniqueConstraintViolationException(nonUniqueConstraintViolations);
+            throw new NonUniqueConstraintViolationException(nonUniqueConstraintViolations);
         }
     }
 }
