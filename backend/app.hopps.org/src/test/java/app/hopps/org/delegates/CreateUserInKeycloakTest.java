@@ -28,7 +28,6 @@ class CreateUserInKeycloakTest {
     @ConfigProperty(name = "app.hopps.vereine.auth.default-role")
     String defaultRole;
 
-    @Inject
     @ConfigProperty(name = "app.hopps.vereine.auth.realm-name")
     String realmName;
 

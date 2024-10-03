@@ -2,6 +2,7 @@ package app.hopps.org.delegates;
 
 import app.hopps.org.jpa.Member;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -16,21 +17,14 @@ import java.util.List;
 @ApplicationScoped
 public class CreateUserInKeycloak {
 
+    @Inject
     Keycloak keycloak;
-    RealmResource realmResource;
-    UsersResource usersResource;
-    RoleRepresentation ownerRole;
 
-    public CreateUserInKeycloak(
-            Keycloak keycloak,
-            @ConfigProperty(name = "app.hopps.vereine.auth.realm-name") String realmName,
-            @ConfigProperty(name = "app.hopps.vereine.auth.default-role") String ownerRoleName
-    ) {
-        this.keycloak = keycloak;
-        this.realmResource = keycloak.realm(realmName);
-        this.usersResource = realmResource.users();
-        this.ownerRole = createOwnerRole(realmResource, ownerRoleName);
-    }
+    @ConfigProperty(name = "app.hopps.vereine.auth.realm-name")
+    String realmName;
+
+    @ConfigProperty(name = "app.hopps.vereine.auth.default-role")
+    String ownerRoleName;
 
     /**
      * If necessary, creates the owner role, otherwise just returns it.
@@ -52,6 +46,11 @@ public class CreateUserInKeycloak {
     }
 
     public void createUserInKeycloak(Member user) {
+
+        RealmResource realmResource = keycloak.realm(realmName);
+        UsersResource usersResource = realmResource.users();
+        RoleRepresentation ownerRole = createOwnerRole(realmResource, ownerRoleName);
+        
         UserRepresentation userRepresentation = new UserRepresentation();
 
         userRepresentation.setEnabled(true);
