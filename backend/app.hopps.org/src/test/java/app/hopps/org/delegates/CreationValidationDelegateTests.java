@@ -135,7 +135,6 @@ public class CreationValidationDelegateTests {
 
         organization.getMembers().add(owner);
 
-
         // then
         NonUniqueConstraintViolationException exception = assertThrows(NonUniqueConstraintViolationException.class, () -> delegate.validateUniqueness(organization, owner));
         assertThat(exception.getViolations(), hasSize(1));

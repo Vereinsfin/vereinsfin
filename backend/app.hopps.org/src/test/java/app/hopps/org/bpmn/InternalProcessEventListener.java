@@ -1,17 +1,22 @@
 package app.hopps.org.bpmn;
 
-import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Singleton;
 import org.kie.api.event.process.*;
+import org.kie.api.runtime.process.NodeInstance;
 import org.kie.kogito.internal.process.event.KogitoProcessEventListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@ApplicationScoped
+import java.util.ArrayList;
+import java.util.List;
+
+@Singleton
 public class InternalProcessEventListener implements KogitoProcessEventListener {
 
     private static final Logger LOG = LoggerFactory.getLogger(InternalProcessEventListener.class);
 
     private ProcessCompletedEvent processCompletedEvent;
+    private List<NodeInstance> visitedNodes = new ArrayList<>();
 
     @Override
     public void beforeProcessStarted(ProcessStartedEvent event) {
@@ -35,7 +40,8 @@ public class InternalProcessEventListener implements KogitoProcessEventListener 
 
     @Override
     public void beforeNodeTriggered(ProcessNodeTriggeredEvent event) {
-        LOG.info("beforeNodeTriggered{}", event);
+        LOG.info("beforeNodeTriggered {}", event);
+        visitedNodes.add(event.getNodeInstance());
     }
 
     @Override
@@ -65,5 +71,9 @@ public class InternalProcessEventListener implements KogitoProcessEventListener 
 
     public ProcessCompletedEvent getProcessCompletedEvent() {
         return processCompletedEvent;
+    }
+
+    public List<NodeInstance> getVisitedNodes() {
+        return visitedNodes;
     }
 }

@@ -5,6 +5,8 @@ import app.hopps.org.jpa.Organization;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
+import org.hamcrest.collection.IsArrayWithSize;
+import org.hamcrest.collection.IsIterableWithSize;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
@@ -18,6 +20,8 @@ import org.kie.kogito.process.ProcessInstance;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.collection.IsIterableWithSize.iterableWithSize;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
@@ -41,7 +45,6 @@ public class NewOrganizationInvalidateTest {
 
     @Test
     @DisplayName("should terminate if data is invalid")
-    @Disabled("Currently not working, but is already discussed in Zulip")
     void shouldTerminateIfDataIsInvalid() {
 
         //given
@@ -49,6 +52,40 @@ public class NewOrganizationInvalidateTest {
         kegelclub.setName("Kegelklub 777");
         kegelclub.setType(Organization.TYPE.EINGETRAGENER_VEREIN);
         kegelclub.setSlug(""); // invalid
+
+        Member kevin = new Member();
+        kevin.setFirstName("Kevin");
+        kevin.setLastName("Kegelkönig");
+        kevin.setEmail("pinking777@gmail.com");
+
+        // when
+        Model model = newOrganizationProcess.createModel();
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("organization", kegelclub);
+        parameters.put("owner", kevin);
+        model.fromMap(parameters);
+
+        ProcessInstance<? extends Model> instance = newOrganizationProcess.createInstance(model);
+        instance.start();
+
+        // then
+        assertEquals(KogitoProcessInstance.STATE_COMPLETED, instance.status());
+    }
+
+    @Test
+    @DisplayName("should terminate if data is non unique")
+    void shouldTerminateIfDataIsNonUnique() {
+
+        //given
+        Organization existingOrganization = new Organization();
+        existingOrganization.setName("Kegelclub 777");
+        existingOrganization.setType(Organization.TYPE.EINGETRAGENER_VEREIN);
+        existingOrganization.setSlug("kegelclub-777");
+
+        Organization kegelclub = new Organization();
+        kegelclub.setName("Kegelklub 777");
+        kegelclub.setType(Organization.TYPE.EINGETRAGENER_VEREIN);
+        kegelclub.setSlug("kegelclub-777"); // invalid
 
         Member kevin = new Member();
         kevin.setFirstName("Kevin");
