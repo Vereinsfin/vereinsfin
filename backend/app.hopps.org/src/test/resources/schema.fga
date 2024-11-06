@@ -1,0 +1,9 @@
+model
+  schema 1.1
+
+type user
+
+type bommel
+  relations
+    define read: [user] or write
+    define write: [user]

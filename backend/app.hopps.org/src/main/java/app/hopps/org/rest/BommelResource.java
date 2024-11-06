@@ -5,6 +5,9 @@ import app.hopps.org.jpa.BommelRepository;
 import app.hopps.org.jpa.TreeSearchBommel;
 import io.quarkiverse.openfga.client.AuthorizationModelClient;
 import io.quarkiverse.openfga.client.model.TupleKey;
+import io.quarkiverse.zanzibar.annotations.FGAPathObject;
+import io.quarkiverse.zanzibar.annotations.FGARelation;
+import io.quarkiverse.zanzibar.annotations.FGAUserType;
 import io.quarkus.runtime.configuration.ConfigUtils;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -39,9 +42,10 @@ public class BommelResource {
 
     @GET
     @Path("/{id}/children")
+    @FGARelation("read")
+    @FGAUserType("user")
+    @FGAPathObject(param = "id", type = "bommel")
     public Set<Bommel> getBommelChildren(@PathParam("id") long id) {
-        checkUserHasPermission(id, "read");
-
         Bommel base = bommelRepo.findById(id);
 
         if (base == null) {
@@ -168,7 +172,7 @@ public class BommelResource {
     @Path("/{id}")
     @Transactional
     public void deleteBommel(@PathParam("id") long id,
-            @QueryParam("recursive") @DefaultValue("false") boolean recursive) {
+                             @QueryParam("recursive") @DefaultValue("false") boolean recursive) {
         checkUserHasPermission(id, "write");
 
         Bommel base = bommelRepo.findById(id);
