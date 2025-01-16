@@ -1,5 +1,7 @@
 package app.hopps.mailservice;
 
+import app.hopps.commons.mail.Mail;
+import app.hopps.commons.mail.MailTemplates;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import org.junit.jupiter.api.Test;
 
