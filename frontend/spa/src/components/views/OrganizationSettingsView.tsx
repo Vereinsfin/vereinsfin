@@ -127,7 +127,7 @@ function OrganizationSettingsView() {
             ) : (
                 <>
                     <h3>Structure:</h3>
-                    <OrganizationTree tree={tree} createNode={createTreeNode} updateNode={updateTreeNode} deleteNode={deleteTreeNode} moveNode={moveTreeNode} />
+                    <OrganizationTree tree={tree} editable={true} selectable={false} createNode={createTreeNode} updateNode={updateTreeNode} deleteNode={deleteTreeNode} moveNode={moveTreeNode} />
                 </>
             )}
         </>
