@@ -3,11 +3,8 @@ package app.hopps.fin.endpoint;
 import app.hopps.commons.DocumentType;
 import app.hopps.fin.S3Handler;
 import app.hopps.fin.jpa.TransactionRecordRepository;
-import app.hopps.fin.jpa.entities.TransactionRecord;
-import app.hopps.fin.kafka.DocumentProducer;
 import io.quarkus.security.Authenticated;
 import jakarta.inject.Inject;
-import jakarta.transaction.Transactional;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.NotFoundException;
@@ -25,25 +22,20 @@ import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
 
 import java.io.InputStream;
-import java.math.BigDecimal;
 import java.util.Optional;
+import java.util.UUID;
 
 @Authenticated
 @Path("/document")
 public class DocumentResource {
+
     private static final Logger LOG = LoggerFactory.getLogger(DocumentResource.class);
 
-    private final DocumentProducer documentProducer;
-    private final S3Handler s3Handler;
-    private final TransactionRecordRepository repository;
+    @Inject
+    S3Handler s3Handler;
 
     @Inject
-    public DocumentResource(DocumentProducer documentProducer, S3Handler s3Handler,
-            TransactionRecordRepository repository) {
-        this.documentProducer = documentProducer;
-        this.s3Handler = s3Handler;
-        this.repository = repository;
-    }
+    TransactionRecordRepository repository;
 
     @GET
     @Path("{documentKey}")
@@ -69,23 +61,11 @@ public class DocumentResource {
             @RestForm("file") FileUpload file,
             @RestForm @PartType(MediaType.TEXT_PLAIN) Optional<Long> bommelId,
             @RestForm @PartType(MediaType.TEXT_PLAIN) Optional<DocumentType> type) {
-        s3Handler.saveFile(file);
 
-        // Save in database
-        TransactionRecord transactionRecord = new TransactionRecord(BigDecimal.ZERO);
-        transactionRecord.setDocumentKey(file.fileName());
-        bommelId.ifPresent(transactionRecord::setBommelId);
+        String documentKey = UUID.randomUUID().toString();
+        s3Handler.saveFile(file, documentKey);
 
-        persistTransactionRecord(transactionRecord);
-
-        // Sent to kafka to process
-        documentProducer.sendToProcess(transactionRecord, type.orElse(DocumentType.INVOICE));
-
+        // FIXME: Start process
         return Response.accepted().build();
-    }
-
-    @Transactional
-    void persistTransactionRecord(TransactionRecord transactionRecord) {
-        repository.persist(transactionRecord);
     }
 }

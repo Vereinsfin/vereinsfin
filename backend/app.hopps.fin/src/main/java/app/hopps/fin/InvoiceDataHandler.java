@@ -12,6 +12,7 @@ import java.time.ZoneId;
 @SuppressWarnings("java:S3740")
 public class InvoiceDataHandler extends AbstractDataHandler {
     @Override
+
     protected void updateData(TransactionRecord transactionRecord, Data data) {
         if (data instanceof InvoiceData invoiceData) {
             handleInvoice(transactionRecord, invoiceData);
