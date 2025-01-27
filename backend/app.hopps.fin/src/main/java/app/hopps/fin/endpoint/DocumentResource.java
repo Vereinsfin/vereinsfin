@@ -2,11 +2,14 @@ package app.hopps.fin.endpoint;
 
 import app.hopps.commons.DocumentType;
 import app.hopps.fin.S3Handler;
+import app.hopps.fin.bpmn.SubmitService;
 import app.hopps.fin.jpa.TransactionRecordRepository;
 import io.quarkus.security.Authenticated;
+import io.quarkus.security.identity.SecurityIdentity;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
+import jakarta.ws.rs.NotAuthorizedException;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
@@ -35,7 +38,10 @@ public class DocumentResource {
     S3Handler s3Handler;
 
     @Inject
-    TransactionRecordRepository repository;
+    SubmitService submitService;
+
+    @Inject
+    SecurityIdentity identity;
 
     @GET
     @Path("{documentKey}")
@@ -58,14 +64,30 @@ public class DocumentResource {
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
     public Response uploadDocument(
-            @RestForm("file") FileUpload file,
-            @RestForm @PartType(MediaType.TEXT_PLAIN) Optional<Long> bommelId,
-            @RestForm @PartType(MediaType.TEXT_PLAIN) Optional<DocumentType> type) {
-
+        @RestForm("file") FileUpload file,
+        @RestForm @PartType(MediaType.TEXT_PLAIN) Boolean privatelyPaid,
+        @RestForm @PartType(MediaType.TEXT_PLAIN) Optional<Long> bommelId,
+        @RestForm @PartType(MediaType.TEXT_PLAIN) Optional<DocumentType> type)
+    {
         String documentKey = UUID.randomUUID().toString();
         s3Handler.saveFile(file, documentKey);
 
-        // FIXME: Start process
-        return Response.accepted().build();
+        String submitterUserName = identity.getPrincipal().getName();
+        if (submitterUserName == null) {
+            throw new NotAuthorizedException("Not authorized");
+        }
+
+        SubmitService.DocumentSubmissionRequest request = new SubmitService.DocumentSubmissionRequest(
+            documentKey,
+            bommelId,
+            type,
+            privatelyPaid,
+            submitterUserName
+        );
+
+        String processInstanceId = submitService.submitDocument(request);
+        return Response.accepted()
+            .entity(processInstanceId)
+            .build();
     }
 }
